@@ -1,12 +1,18 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const isLanding = location.pathname === "/";
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
@@ -37,12 +43,26 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <Link to="/auth">
-              <Button variant="ghost">Log In</Button>
-            </Link>
-            <Link to="/auth?mode=signup">
-              <Button variant="default">Start Free</Button>
-            </Link>
+            {user ? (
+              <>
+                <Link to="/dashboard">
+                  <Button variant="ghost">Dashboard</Button>
+                </Link>
+                <Button variant="outline" onClick={handleSignOut} className="gap-2">
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost">Log In</Button>
+                </Link>
+                <Link to="/auth?mode=signup">
+                  <Button variant="default">Start Free</Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -72,12 +92,26 @@ const Navbar = () => {
                 </>
               )}
               <div className="flex flex-col gap-2 mt-4">
-                <Link to="/auth">
-                  <Button variant="ghost" className="w-full">Log In</Button>
-                </Link>
-                <Link to="/auth?mode=signup">
-                  <Button variant="default" className="w-full">Start Free</Button>
-                </Link>
+                {user ? (
+                  <>
+                    <Link to="/dashboard">
+                      <Button variant="ghost" className="w-full">Dashboard</Button>
+                    </Link>
+                    <Button variant="outline" onClick={handleSignOut} className="w-full gap-2">
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/auth">
+                      <Button variant="ghost" className="w-full">Log In</Button>
+                    </Link>
+                    <Link to="/auth?mode=signup">
+                      <Button variant="default" className="w-full">Start Free</Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
