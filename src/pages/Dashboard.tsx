@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Link, useNavigate } from "react-router-dom";
@@ -13,95 +13,39 @@ import {
   LogOut,
   ChevronRight,
 } from "lucide-react";
-
-const lessons = [
-  {
-    id: 1,
-    title: "Getting Started",
-    description: "Understanding the cube structure and notation",
-    duration: "8 min",
-    completed: true,
-    free: true,
-  },
-  {
-    id: 2,
-    title: "The White Cross",
-    description: "Building the first layer foundation",
-    duration: "12 min",
-    completed: true,
-    free: true,
-  },
-  {
-    id: 3,
-    title: "First Layer Corners",
-    description: "Completing the white face",
-    duration: "15 min",
-    completed: false,
-    free: true,
-  },
-  {
-    id: 4,
-    title: "Second Layer Edges",
-    description: "Middle layer algorithm mastery",
-    duration: "18 min",
-    completed: false,
-    free: true,
-  },
-  {
-    id: 5,
-    title: "Yellow Cross (OLL)",
-    description: "Orientation of last layer - part 1",
-    duration: "14 min",
-    completed: false,
-    free: true,
-  },
-  {
-    id: 6,
-    title: "Complete OLL",
-    description: "Full orientation algorithms",
-    duration: "22 min",
-    completed: false,
-    free: false,
-  },
-  {
-    id: 7,
-    title: "PLL Basics",
-    description: "Permutation of last layer introduction",
-    duration: "20 min",
-    completed: false,
-    free: false,
-  },
-  {
-    id: 8,
-    title: "Full PLL Mastery",
-    description: "All 21 PLL algorithms",
-    duration: "35 min",
-    completed: false,
-    free: false,
-  },
-  {
-    id: 9,
-    title: "Finger Tricks",
-    description: "Speed optimization techniques",
-    duration: "25 min",
-    completed: false,
-    free: false,
-  },
-  {
-    id: 10,
-    title: "Lookahead Training",
-    description: "Thinking ahead while solving",
-    duration: "30 min",
-    completed: false,
-    free: false,
-  },
-];
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { useLessons } from "@/hooks/useLessons";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [isPro] = useState(false); // Would come from auth state
-  const completedLessons = lessons.filter((l) => l.completed).length;
-  const progressPercent = Math.round((completedLessons / lessons.length) * 100);
+  const { user, signOut, loading: authLoading } = useAuth();
+  const { profile, isPro, loading: profileLoading } = useProfile();
+  const { lessons, progress, progressPercent, completedCount, loading: lessonsLoading } = useLessons();
+
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  if (authLoading || profileLoading || lessonsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  const displayName = profile?.full_name || user.email?.split("@")[0] || "Cuber";
 
   return (
     <div className="min-h-screen bg-background">
@@ -122,7 +66,7 @@ const Dashboard = () => {
               </Button>
             )}
             <button
-              onClick={() => navigate("/")}
+              onClick={handleSignOut}
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
             >
               <LogOut className="w-4 h-4" />
@@ -135,7 +79,7 @@ const Dashboard = () => {
       <main className="container mx-auto px-6 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome back, Cuber!</h1>
+          <h1 className="text-3xl font-bold mb-2">Welcome back, {displayName}!</h1>
           <p className="text-muted-foreground">Continue your journey to sub-30 solves.</p>
         </div>
 
@@ -159,7 +103,7 @@ const Dashboard = () => {
                 <BookOpen className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{completedLessons}/{lessons.length}</p>
+                <p className="text-2xl font-bold">{completedCount}/{lessons.length}</p>
                 <p className="text-sm text-muted-foreground">Lessons Completed</p>
               </div>
             </div>
@@ -171,8 +115,8 @@ const Dashboard = () => {
                 <Clock className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">2h 45m</p>
-                <p className="text-sm text-muted-foreground">Watch Time</p>
+                <p className="text-2xl font-bold">{isPro ? "Pro" : "Free"}</p>
+                <p className="text-sm text-muted-foreground">Subscription</p>
               </div>
             </div>
           </div>
@@ -201,7 +145,8 @@ const Dashboard = () => {
 
           <div className="space-y-3">
             {lessons.map((lesson) => {
-              const isLocked = !lesson.free && !isPro;
+              const isLocked = !lesson.is_free && !isPro;
+              const isCompleted = progress[lesson.id]?.completed || false;
               
               return (
                 <Link
@@ -217,14 +162,14 @@ const Dashboard = () => {
                   <div className="flex items-center gap-4">
                     <div
                       className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
-                        lesson.completed
+                        isCompleted
                           ? "bg-primary/20"
                           : isLocked
                           ? "bg-muted"
                           : "bg-secondary"
                       }`}
                     >
-                      {lesson.completed ? (
+                      {isCompleted ? (
                         <CheckCircle2 className="w-6 h-6 text-primary" />
                       ) : isLocked ? (
                         <Lock className="w-5 h-5 text-muted-foreground" />
@@ -236,7 +181,7 @@ const Dashboard = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold truncate">{lesson.title}</h3>
-                        {lesson.free && !isPro && (
+                        {lesson.is_free && !isPro && (
                           <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary">
                             Free
                           </span>

@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -12,6 +13,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { signIn, signUp, user, loading } = useAuth();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -23,22 +25,63 @@ const Auth = () => {
     setIsLogin(searchParams.get("mode") !== "signup");
   }, [searchParams]);
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/dashboard");
+    }
+  }, [user, loading, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate auth (replace with real auth later)
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    if (isLogin) {
-      toast.success("Welcome back!");
-    } else {
-      toast.success("Account created successfully!");
+    try {
+      if (isLogin) {
+        const { error } = await signIn(formData.email, formData.password);
+        if (error) {
+          if (error.message.includes("Invalid login credentials")) {
+            toast.error("Invalid email or password");
+          } else {
+            toast.error(error.message);
+          }
+          setIsLoading(false);
+          return;
+        }
+        toast.success("Welcome back!");
+      } else {
+        if (formData.password.length < 6) {
+          toast.error("Password must be at least 6 characters");
+          setIsLoading(false);
+          return;
+        }
+        const { error } = await signUp(formData.email, formData.password, formData.name);
+        if (error) {
+          if (error.message.includes("already registered")) {
+            toast.error("This email is already registered. Please sign in.");
+          } else {
+            toast.error(error.message);
+          }
+          setIsLoading(false);
+          return;
+        }
+        toast.success("Account created successfully!");
+      }
+      navigate("/dashboard");
+    } catch (err) {
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
-    navigate("/dashboard");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
@@ -125,14 +168,6 @@ const Auth = () => {
                 </button>
               </div>
             </div>
-
-            {isLogin && (
-              <div className="text-right">
-                <a href="#" className="text-sm text-primary hover:underline">
-                  Forgot password?
-                </a>
-              </div>
-            )}
 
             <Button
               type="submit"
