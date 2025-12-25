@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroCube from "@/assets/hero-cube.jpg";
+import VideoPreviewModal from "@/components/modals/VideoPreviewModal";
 
 const HeroSection = () => {
+  const [videoOpen, setVideoOpen] = useState(false);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Background Image */}
@@ -48,7 +52,12 @@ const HeroSection = () => {
                 <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
-            <Button variant="glass" size="xl" className="gap-3">
+            <Button 
+              variant="glass" 
+              size="xl" 
+              className="gap-3"
+              onClick={() => setVideoOpen(true)}
+            >
               <Play className="w-5 h-5" />
               Watch Preview
             </Button>
@@ -82,6 +91,9 @@ const HeroSection = () => {
 
       {/* Bottom Gradient Fade */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
+
+      {/* Video Preview Modal */}
+      <VideoPreviewModal open={videoOpen} onOpenChange={setVideoOpen} />
     </section>
   );
 };
