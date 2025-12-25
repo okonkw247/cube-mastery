@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import ContactModal from "@/components/modals/ContactModal";
 
 const plans = [
   {
@@ -49,8 +51,21 @@ const plans = [
 
 const PricingSection = () => {
   const [selectedPlan, setSelectedPlan] = useState("starter");
+  const [contactOpen, setContactOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const currentPlan = plans.find((p) => p.id === selectedPlan) || plans[0];
+
+  const handlePlanSelect = () => {
+    if (user) {
+      // User is logged in - redirect to dashboard with plan info
+      navigate(`/dashboard?upgrade=${selectedPlan}`);
+    } else {
+      // User not logged in - redirect to signup
+      navigate(`/auth?mode=signup&plan=${selectedPlan}`);
+    }
+  };
 
   return (
     <section id="pricing" className="py-24 relative">
@@ -134,16 +149,15 @@ const PricingSection = () => {
                   ))}
                 </ul>
 
-                <Link to="/auth?mode=signup">
-                  <Button
-                    variant="hero"
-                    size="lg"
-                    className="w-full gap-2"
-                  >
-                    Continue With {currentPlan.name}
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </Link>
+                <Button
+                  variant="hero"
+                  size="lg"
+                  className="w-full gap-2"
+                  onClick={handlePlanSelect}
+                >
+                  Continue With {currentPlan.name}
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
               </div>
             )}
 
@@ -152,17 +166,22 @@ const PricingSection = () => {
                 <p className="text-muted-foreground mb-6">
                   Perfect for schools, cubing clubs, and organizations. Get custom pricing, dedicated support, and group features.
                 </p>
-                <Link to="/auth?mode=signup">
-                  <Button variant="outline" size="lg" className="gap-2">
-                    Contact Us
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="gap-2"
+                  onClick={() => setContactOpen(true)}
+                >
+                  Contact Us
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
     </section>
   );
 };
