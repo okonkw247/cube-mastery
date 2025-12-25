@@ -1,8 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, X, LogOut, Settings } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import jsnLogo from "@/assets/jsn-logo.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,11 +19,9 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">C</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">CubeMaster</span>
+          <Link to="/" className="flex items-center gap-3">
+            <img src={jsnLogo} alt="JSN Logo" className="w-10 h-10 object-contain" />
+            <span className="text-xl font-bold text-foreground">JSN Cubing</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -31,6 +30,9 @@ const Navbar = () => {
               <>
                 <a href="#problem" className="text-muted-foreground hover:text-foreground transition-colors">
                   Why Us
+                </a>
+                <a href="#offers" className="text-muted-foreground hover:text-foreground transition-colors">
+                  What We Offer
                 </a>
                 <a href="#solution" className="text-muted-foreground hover:text-foreground transition-colors">
                   Method
@@ -47,6 +49,11 @@ const Navbar = () => {
               <>
                 <Link to="/dashboard">
                   <Button variant="ghost">Dashboard</Button>
+                </Link>
+                <Link to="/settings">
+                  <Button variant="ghost" size="icon">
+                    <Settings className="w-4 h-4" />
+                  </Button>
                 </Link>
                 <Button variant="outline" onClick={handleSignOut} className="gap-2">
                   <LogOut className="w-4 h-4" />
@@ -83,6 +90,9 @@ const Navbar = () => {
                   <a href="#problem" className="text-muted-foreground hover:text-foreground transition-colors">
                     Why Us
                   </a>
+                  <a href="#offers" className="text-muted-foreground hover:text-foreground transition-colors">
+                    What We Offer
+                  </a>
                   <a href="#solution" className="text-muted-foreground hover:text-foreground transition-colors">
                     Method
                   </a>
@@ -96,6 +106,12 @@ const Navbar = () => {
                   <>
                     <Link to="/dashboard">
                       <Button variant="ghost" className="w-full">Dashboard</Button>
+                    </Link>
+                    <Link to="/settings">
+                      <Button variant="ghost" className="w-full gap-2">
+                        <Settings className="w-4 h-4" />
+                        Settings
+                      </Button>
                     </Link>
                     <Button variant="outline" onClick={handleSignOut} className="w-full gap-2">
                       <LogOut className="w-4 h-4" />
