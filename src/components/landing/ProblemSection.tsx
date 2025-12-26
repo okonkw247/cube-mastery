@@ -22,7 +22,7 @@ const ProblemSection = () => {
   return (
     <section id="problem" className="py-24 relative">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 animate-on-scroll">
           <span className="text-primary font-semibold text-sm uppercase tracking-wider">The Problem</span>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-4 mb-6">
             Why Most Cubers Stay Stuck
@@ -36,7 +36,8 @@ const ProblemSection = () => {
           {problems.map((problem, index) => (
             <div
               key={index}
-              className="card-gradient rounded-2xl p-8 border border-border hover:border-primary/30 transition-all duration-300 group"
+              className="card-gradient rounded-2xl p-8 border border-border hover:border-primary/30 transition-all duration-300 group animate-on-scroll"
+              style={{ transitionDelay: `${index * 100}ms` }}
             >
               <div className="w-14 h-14 rounded-xl bg-destructive/10 flex items-center justify-center mb-6 group-hover:bg-destructive/20 transition-colors">
                 <problem.icon className="w-7 h-7 text-destructive" />

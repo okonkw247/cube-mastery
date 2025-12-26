@@ -28,15 +28,15 @@ const BonusSection = () => {
       
       <div className="container mx-auto px-6 relative">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8 animate-on-scroll">
             <Download className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-primary">Free Bonus</span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 animate-on-scroll">
             Get Your Free <span className="text-gradient">Starter Kit</span>
           </h2>
-          <p className="text-muted-foreground text-lg mb-12 max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-lg mb-12 max-w-2xl mx-auto animate-on-scroll">
             Sign up today and get instant access to these bonus resources — no payment required.
           </p>
 
@@ -44,7 +44,8 @@ const BonusSection = () => {
             {bonuses.map((bonus, index) => (
               <div
                 key={index}
-                className="card-gradient rounded-2xl p-6 border border-border text-center"
+                className="card-gradient rounded-2xl p-6 border border-border text-center animate-on-scroll"
+                style={{ transitionDelay: `${index * 100}ms` }}
               >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
                   <bonus.icon className="w-6 h-6 text-primary" />
@@ -55,7 +56,7 @@ const BonusSection = () => {
             ))}
           </div>
 
-          <Link to="/auth?mode=signup">
+          <Link to="/auth?mode=signup" className="animate-on-scroll inline-block">
             <Button variant="hero" size="xl" className="gap-3">
               Get Free Access
               <Download className="w-5 h-5" />
