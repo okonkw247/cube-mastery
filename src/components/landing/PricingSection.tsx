@@ -1,11 +1,25 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, ArrowRight } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import ContactModal from "@/components/modals/ContactModal";
+import heroCube from "@/assets/hero-cube.jpg";
 
 const plans = [
+  {
+    id: "free",
+    name: "Free Plan",
+    price: "$0",
+    period: "/forever",
+    description: "Try before you buy. Perfect for exploring.",
+    features: [
+      "Access to 3 free lessons",
+      "Basic algorithm reference",
+      "Community forum access",
+      "Limited practice tips",
+    ],
+  },
   {
     id: "starter",
     name: "Starter Plan",
@@ -50,7 +64,7 @@ const plans = [
 ];
 
 const PricingSection = () => {
-  const [selectedPlan, setSelectedPlan] = useState("starter");
+  const [selectedPlan, setSelectedPlan] = useState("free");
   const [contactOpen, setContactOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -58,11 +72,21 @@ const PricingSection = () => {
   const currentPlan = plans.find((p) => p.id === selectedPlan) || plans[0];
 
   const handlePlanSelect = () => {
+    if (selectedPlan === "free") {
+      // Free plan - just sign up
+      if (user) {
+        navigate("/dashboard");
+      } else {
+        navigate("/auth?mode=signup&plan=free");
+      }
+      return;
+    }
+    
     if (user) {
-      // User is logged in - redirect to dashboard with plan info
-      navigate(`/dashboard?upgrade=${selectedPlan}`);
+      // User is logged in - redirect to Whop checkout
+      window.open(`https://whop.com/checkout?plan=${selectedPlan}`, "_blank");
     } else {
-      // User not logged in - redirect to signup
+      // User not logged in - redirect to signup first
       navigate(`/auth?mode=signup&plan=${selectedPlan}`);
     }
   };
@@ -70,7 +94,7 @@ const PricingSection = () => {
   return (
     <section id="pricing" className="py-24 relative">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 animate-on-scroll">
           <span className="text-primary font-semibold text-sm uppercase tracking-wider">Pricing</span>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-4 mb-6">
             Choose A Plan That Suits You 👌
@@ -82,17 +106,17 @@ const PricingSection = () => {
 
         <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto items-start">
           {/* Plan Image */}
-          <div className="relative rounded-3xl overflow-hidden h-[500px] hidden lg:block">
-            <div className="absolute inset-0 bg-gradient-to-br from-destructive/80 via-destructive/60 to-primary/40">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-64 h-64 rounded-full bg-gradient-to-br from-destructive to-destructive/50 animate-pulse-glow" />
-              </div>
-            </div>
+          <div className="relative rounded-3xl overflow-hidden h-[500px] hidden lg:block animate-on-scroll">
+            <img 
+              src={heroCube} 
+              alt="JSN Cubing Logo" 
+              className="w-full h-full object-cover"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
           </div>
 
           {/* Plan Selection */}
-          <div className="space-y-4">
+          <div className="space-y-4 animate-on-scroll">
             {/* Plan Options */}
             <div className="space-y-3">
               {plans.map((plan) => (
@@ -118,6 +142,11 @@ const PricingSection = () => {
                       )}
                     </div>
                     <span className="font-semibold">{plan.name}</span>
+                    {plan.id === "free" && (
+                      <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                        Try Free
+                      </span>
+                    )}
                   </div>
                   <div className="text-right">
                     {plan.isEnterprise ? (
@@ -155,7 +184,7 @@ const PricingSection = () => {
                   className="w-full gap-2"
                   onClick={handlePlanSelect}
                 >
-                  Continue With {currentPlan.name}
+                  {selectedPlan === "free" ? "Get Started Free" : `Continue With ${currentPlan.name}`}
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>

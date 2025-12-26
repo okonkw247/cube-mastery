@@ -7,12 +7,13 @@ import {
   CheckCircle2,
   Clock,
   Download,
-  Play,
   Lock,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useLessons } from "@/hooks/useLessons";
+import VideoPlayer from "@/components/VideoPlayer";
+import { toast } from "sonner";
 
 const Lesson = () => {
   const { id } = useParams();
@@ -72,6 +73,14 @@ const Lesson = () => {
     return targetLesson.is_free || isPro;
   };
 
+  const handleUpgrade = () => {
+    window.open("https://whop.com/checkout?plan=pro", "_blank");
+  };
+
+  const handleDownload = (type: string) => {
+    toast.success(`${type} download started!`);
+  };
+
   if (isLocked) {
     return (
       <div className="min-h-screen bg-background">
@@ -95,7 +104,7 @@ const Lesson = () => {
           <p className="text-muted-foreground mb-8">
             This lesson is part of the Pro curriculum. Upgrade to unlock all lessons and master the cube in under 30 seconds.
           </p>
-          <Button variant="hero" size="lg">
+          <Button variant="hero" size="lg" onClick={handleUpgrade}>
             Upgrade to Pro
           </Button>
         </main>
@@ -127,18 +136,7 @@ const Lesson = () => {
       <main className="container mx-auto px-6 py-8 max-w-5xl">
         {/* Video Player */}
         <div className="relative aspect-video rounded-2xl overflow-hidden bg-card mb-8">
-          <div className="absolute inset-0 flex items-center justify-center bg-secondary">
-            {/* Placeholder for video */}
-            <div className="text-center">
-              <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                <Play className="w-10 h-10 text-primary" />
-              </div>
-              <p className="text-muted-foreground">Video Player</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                (Connect video hosting to play lessons)
-              </p>
-            </div>
-          </div>
+          <VideoPlayer videoUrl={lesson.video_url} title={lesson.title} />
         </div>
 
         {/* Lesson Info */}
@@ -182,7 +180,10 @@ const Lesson = () => {
             <div className="card-gradient rounded-2xl p-6 border border-border sticky top-24">
               <h3 className="font-semibold mb-4">Resources</h3>
               
-              <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left mb-3">
+              <button 
+                onClick={() => handleDownload("Lesson Notes")}
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left mb-3"
+              >
                 <Download className="w-5 h-5 text-primary" />
                 <div>
                   <p className="font-medium text-sm">Lesson Notes</p>
@@ -190,7 +191,10 @@ const Lesson = () => {
                 </div>
               </button>
 
-              <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left">
+              <button 
+                onClick={() => handleDownload("Algorithm Sheet")}
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left"
+              >
                 <Download className="w-5 h-5 text-primary" />
                 <div>
                   <p className="font-medium text-sm">Algorithm Sheet</p>
@@ -227,7 +231,7 @@ const Lesson = () => {
                 <ArrowRight className="w-4 h-4" />
               </Button>
             ) : (
-              <Button variant="default" className="gap-2 opacity-50" disabled>
+              <Button variant="default" className="gap-2" onClick={handleUpgrade}>
                 <Lock className="w-4 h-4" />
                 Upgrade to Continue
               </Button>
