@@ -34,7 +34,7 @@ const SolutionSection = () => {
       <div className="absolute top-1/2 left-0 w-[400px] h-[400px] rounded-full bg-primary/5 blur-[100px]" />
       
       <div className="container mx-auto px-6 relative">
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 animate-on-scroll">
           <span className="text-primary font-semibold text-sm uppercase tracking-wider">The Solution</span>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-4 mb-6">
             The CubeMaster Method
@@ -48,7 +48,7 @@ const SolutionSection = () => {
           {/* Features */}
           <div className="space-y-8">
             {features.map((feature, index) => (
-              <div key={index} className="flex gap-5">
+              <div key={index} className="flex gap-5 animate-on-scroll" style={{ transitionDelay: `${index * 100}ms` }}>
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <feature.icon className="w-6 h-6 text-primary" />
                 </div>
@@ -61,7 +61,7 @@ const SolutionSection = () => {
           </div>
 
           {/* Benefits Card */}
-          <div className="card-gradient rounded-3xl p-8 sm:p-10 border border-border">
+          <div className="card-gradient rounded-3xl p-8 sm:p-10 border border-border animate-on-scroll">
             <h3 className="text-2xl font-bold mb-8">What You Get</h3>
             <div className="grid sm:grid-cols-2 gap-4">
               {benefits.map((benefit, index) => (

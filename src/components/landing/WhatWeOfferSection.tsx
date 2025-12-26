@@ -13,7 +13,7 @@ const WhatWeOfferSection = () => {
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 animate-on-scroll">
           <span className="text-primary font-semibold text-sm uppercase tracking-wider">What We Offer</span>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-4 mb-6">
             We Will Handle Your Learning 📖
@@ -25,7 +25,7 @@ const WhatWeOfferSection = () => {
 
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Stats Card */}
-          <div className="card-gradient rounded-3xl p-8 border border-border relative overflow-hidden">
+          <div className="card-gradient rounded-3xl p-8 border border-border relative overflow-hidden animate-on-scroll">
             <div className="relative z-10">
               {/* Circular Progress */}
               <div className="flex justify-center mb-6">
@@ -75,7 +75,7 @@ const WhatWeOfferSection = () => {
           </div>
 
           {/* Features */}
-          <div className="space-y-8">
+          <div className="space-y-8 animate-on-scroll">
             <div className="flex gap-4">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                 <Users className="w-6 h-6 text-primary" />
@@ -103,7 +103,7 @@ const WhatWeOfferSection = () => {
         </div>
 
         {/* Stats Bar Chart Section */}
-        <div className="mt-16 card-gradient rounded-3xl p-8 border border-border">
+        <div className="mt-16 card-gradient rounded-3xl p-8 border border-border animate-on-scroll">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
               <h3 className="text-2xl font-bold mb-4">Track Your Journey</h3>
