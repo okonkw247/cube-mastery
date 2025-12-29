@@ -50,6 +50,9 @@ const Navbar = () => {
                 <Link to="/dashboard">
                   <Button variant="ghost">Dashboard</Button>
                 </Link>
+                <Link to="/profile">
+                  <Button variant="ghost">Profile</Button>
+                </Link>
                 <Link to="/settings">
                   <Button variant="ghost" size="icon">
                     <Settings className="w-4 h-4" />
@@ -106,6 +109,9 @@ const Navbar = () => {
                   <>
                     <Link to="/dashboard">
                       <Button variant="ghost" className="w-full">Dashboard</Button>
+                    </Link>
+                    <Link to="/profile">
+                      <Button variant="ghost" className="w-full">Profile</Button>
                     </Link>
                     <Link to="/settings">
                       <Button variant="ghost" className="w-full gap-2">
