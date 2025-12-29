@@ -186,27 +186,50 @@ const Settings = () => {
             {/* Profile Tab */}
             {activeTab === "profile" && (
               <div className="space-y-8">
-                {/* Profile Header */}
+                {/* Profile Header with Avatar */}
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                    <User className="w-8 h-8 text-muted-foreground" />
+                  <div className="relative group">
+                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-border">
+                      {profile?.avatar_url ? (
+                        <img src={profile.avatar_url} alt={displayName} className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-8 h-8 text-muted-foreground" />
+                      )}
+                    </div>
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h2 className="text-xl font-bold">{displayName}</h2>
                     <p className="text-muted-foreground">{email}</p>
                   </div>
+                  <Link to="/profile">
+                    <Button variant="outline" size="sm">
+                      Edit Profile
+                    </Button>
+                  </Link>
                 </div>
 
-                {/* Name */}
+                {/* Name - Links to Profile page */}
                 <div className="flex items-center justify-between py-4 border-b border-border">
                   <span className="text-muted-foreground">Name</span>
-                  <button 
-                    onClick={() => setEditProfileOpen(true)}
+                  <Link 
+                    to="/profile"
                     className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
                   >
                     <span>{displayName}</span>
                     <ChevronRight className="w-4 h-4" />
-                  </button>
+                  </Link>
+                </div>
+
+                {/* Avatar - Links to Profile page */}
+                <div className="flex items-center justify-between py-4 border-b border-border">
+                  <span className="text-muted-foreground">Profile Picture</span>
+                  <Link 
+                    to="/profile"
+                    className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
+                  >
+                    <span>{profile?.avatar_url ? "Change" : "Add"}</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
                 </div>
 
                 {/* Account Security Section */}
