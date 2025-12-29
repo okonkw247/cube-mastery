@@ -23,6 +23,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useLessons } from "@/hooks/useLessons";
 import jsnLogo from "@/assets/jsn-logo.png";
 import TodoModal from "@/components/modals/TodoModal";
+import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import {
   LineChart,
   Line,
@@ -64,11 +65,23 @@ const Dashboard = () => {
   const [chartPeriod, setChartPeriod] = useState("Year");
   const [todoModalOpen, setTodoModalOpen] = useState(false);
   const [editingTodo, setEditingTodo] = useState<TodoItem | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [todos, setTodos] = useState<TodoItem[]>([
     { id: 1, title: "Complete F2L algorithms practice", date: new Date().toISOString().slice(0, 19).replace("T", " "), urgent: true, done: false },
     { id: 2, title: "Watch OLL lesson video", date: new Date().toISOString().slice(0, 19).replace("T", " "), urgent: false, done: true },
     { id: 3, title: "Practice blind solving", date: new Date().toISOString().slice(0, 19).replace("T", " "), urgent: false, done: false },
   ]);
+
+  // Check if user needs onboarding
+  useEffect(() => {
+    if (user && !profileLoading) {
+      const hasCompletedOnboarding = localStorage.getItem(`onboarding_complete_${user.id}`);
+      // Show onboarding if user hasn't completed it and doesn't have a full_name set
+      if (!hasCompletedOnboarding && !profile?.full_name) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [user, profile, profileLoading]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -301,6 +314,15 @@ const Dashboard = () => {
       </main>
 
       <TodoModal open={todoModalOpen} onOpenChange={setTodoModalOpen} todo={editingTodo} onSave={handleSaveTodo} />
+      
+      <OnboardingWizard 
+        open={showOnboarding} 
+        onComplete={() => {
+          setShowOnboarding(false);
+          // Refetch profile to get updated data
+          window.location.reload();
+        }} 
+      />
     </div>
   );
 };
