@@ -17,13 +17,20 @@ import {
   Trash2,
   Edit3,
   Plus,
+  Bookmark,
+  Timer,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useLessons } from "@/hooks/useLessons";
+import { useBookmarks } from "@/hooks/useBookmarks";
+import { usePracticeAttempts } from "@/hooks/usePracticeAttempts";
 import jsnLogo from "@/assets/jsn-logo.png";
 import TodoModal from "@/components/modals/TodoModal";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
+import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { PracticeCoach } from "@/components/PracticeCoach";
 import {
   LineChart,
   Line,
@@ -33,21 +40,6 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-
-const chartData = [
-  { month: "Jan", progress: 20 },
-  { month: "Feb", progress: 35 },
-  { month: "Mar", progress: 28 },
-  { month: "Apr", progress: 45 },
-  { month: "May", progress: 52 },
-  { month: "Jun", progress: 48 },
-  { month: "Jul", progress: 60 },
-  { month: "Aug", progress: 55 },
-  { month: "Sep", progress: 70 },
-  { month: "Oct", progress: 65 },
-  { month: "Nov", progress: 78 },
-  { month: "Dec", progress: 85 },
-];
 
 interface TodoItem {
   id: number;
@@ -62,21 +54,41 @@ const Dashboard = () => {
   const { user, signOut, loading: authLoading } = useAuth();
   const { profile, isPro, loading: profileLoading } = useProfile();
   const { lessons, progress, progressPercent, completedCount, loading: lessonsLoading } = useLessons();
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+  const { totalAttempts, attempts } = usePracticeAttempts();
   const [chartPeriod, setChartPeriod] = useState("Year");
   const [todoModalOpen, setTodoModalOpen] = useState(false);
   const [editingTodo, setEditingTodo] = useState<TodoItem | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [practiceLesson, setPracticeLesson] = useState<{ id: string; title: string } | null>(null);
   const [todos, setTodos] = useState<TodoItem[]>([
     { id: 1, title: "Complete F2L algorithms practice", date: new Date().toISOString().slice(0, 19).replace("T", " "), urgent: true, done: false },
     { id: 2, title: "Watch OLL lesson video", date: new Date().toISOString().slice(0, 19).replace("T", " "), urgent: false, done: true },
     { id: 3, title: "Practice blind solving", date: new Date().toISOString().slice(0, 19).replace("T", " "), urgent: false, done: false },
   ]);
 
+  // Build real chart data from progress and attempts
+  const chartData = (() => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+    return months.map((month, index) => {
+      const monthAttempts = attempts.filter((a) => {
+        const d = new Date(a.completed_at);
+        return d.getMonth() === index && d.getFullYear() === now.getFullYear();
+      }).length;
+      const completedInMonth = Object.values(progress).filter((p) => {
+        if (!p.completed_at) return false;
+        const d = new Date(p.completed_at);
+        return d.getMonth() === index && d.getFullYear() === now.getFullYear();
+      }).length;
+      return { month, progress: (completedInMonth + monthAttempts) * 10 };
+    });
+  })();
+
   // Check if user needs onboarding
   useEffect(() => {
     if (user && !profileLoading) {
       const hasCompletedOnboarding = localStorage.getItem(`onboarding_complete_${user.id}`);
-      // Show onboarding if user hasn't completed it and doesn't have a full_name set
       if (!hasCompletedOnboarding && !profile?.full_name) {
         setShowOnboarding(true);
       }
@@ -133,10 +145,13 @@ const Dashboard = () => {
 
   if (!user) return null;
 
+  const isEmailVerified = user.email_confirmed_at != null;
   const displayName = profile?.full_name || user.email?.split("@")[0] || "Cuber";
 
   return (
     <div className="min-h-screen bg-background">
+      {!isEmailVerified && user.email && <EmailVerificationBanner email={user.email} />}
+
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
@@ -149,6 +164,7 @@ const Dashboard = () => {
                 Upgrade to Pro
               </Button>
             )}
+            <ThemeToggle />
             <Link to="/settings">
               <Button variant="ghost" size="icon"><Settings className="w-4 h-4" /></Button>
             </Link>
@@ -181,8 +197,13 @@ const Dashboard = () => {
             <p className="text-3xl font-bold">{progressPercent}%</p>
           </div>
           <div className="card-gradient rounded-2xl p-6 border border-border">
-            <div className="flex items-center justify-between mb-4"><span className="text-sm text-muted-foreground">All Lessons</span></div>
-            <p className="text-3xl font-bold">{lessons.length}</p>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm text-muted-foreground">Practice Attempts</span>
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Timer className="w-4 h-4 text-primary" />
+              </div>
+            </div>
+            <p className="text-3xl font-bold">{totalAttempts}</p>
           </div>
           <div className="card-gradient rounded-2xl p-6 border border-border">
             <div className="flex items-center justify-between mb-4">
@@ -273,25 +294,48 @@ const Dashboard = () => {
             {lessons.map((lesson) => {
               const isLocked = !lesson.is_free && !isPro;
               const isCompleted = progress[lesson.id]?.completed || false;
+              const bookmarked = isBookmarked(lesson.id);
               return (
-                <Link key={lesson.id} to={isLocked ? "#" : `/lesson/${lesson.id}`} onClick={(e) => isLocked && e.preventDefault()} className={`block card-gradient rounded-xl p-5 border transition-all duration-300 ${isLocked ? "border-border opacity-60 cursor-not-allowed" : "border-border hover:border-primary/50"}`}>
+                <div key={lesson.id} className={`card-gradient rounded-xl p-5 border transition-all duration-300 ${isLocked ? "border-border opacity-60" : "border-border hover:border-primary/50"}`}>
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${isCompleted ? "bg-primary/20" : isLocked ? "bg-muted" : "bg-secondary"}`}>
-                      {isCompleted ? <CheckCircle2 className="w-6 h-6 text-primary" /> : isLocked ? <Lock className="w-5 h-5 text-muted-foreground" /> : <Play className="w-5 h-5 text-foreground" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold truncate">{lesson.title}</h3>
-                        {lesson.is_free && !isPro && <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary">Free</span>}
+                    <Link to={isLocked ? "#" : `/lesson/${lesson.id}`} onClick={(e) => isLocked && e.preventDefault()} className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${isCompleted ? "bg-primary/20" : isLocked ? "bg-muted" : "bg-secondary"}`}>
+                        {isCompleted ? <CheckCircle2 className="w-6 h-6 text-primary" /> : isLocked ? <Lock className="w-5 h-5 text-muted-foreground" /> : <Play className="w-5 h-5 text-foreground" />}
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">{lesson.description}</p>
-                    </div>
-                    <div className="flex items-center gap-4 shrink-0">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold truncate">{lesson.title}</h3>
+                          {lesson.is_free && !isPro && <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary">Free</span>}
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate">{lesson.description}</p>
+                      </div>
+                    </Link>
+                    <div className="flex items-center gap-2 shrink-0">
                       <span className="text-sm text-muted-foreground hidden sm:block">{lesson.duration}</span>
+                      {!isLocked && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleBookmark(lesson.id)}
+                            className={bookmarked ? "text-primary" : "text-muted-foreground"}
+                          >
+                            <Bookmark className={`w-4 h-4 ${bookmarked ? "fill-current" : ""}`} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setPracticeLesson({ id: lesson.id, title: lesson.title })}
+                            className="text-muted-foreground hover:text-primary"
+                          >
+                            <Timer className="w-4 h-4" />
+                          </Button>
+                        </>
+                      )}
                       <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     </div>
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>
@@ -319,10 +363,18 @@ const Dashboard = () => {
         open={showOnboarding} 
         onComplete={() => {
           setShowOnboarding(false);
-          // Refetch profile to get updated data
           window.location.reload();
         }} 
       />
+
+      {practiceLesson && (
+        <PracticeCoach
+          lessonId={practiceLesson.id}
+          lessonTitle={practiceLesson.title}
+          open={!!practiceLesson}
+          onOpenChange={(open) => !open && setPracticeLesson(null)}
+        />
+      )}
     </div>
   );
 };

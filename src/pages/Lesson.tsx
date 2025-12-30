@@ -8,11 +8,16 @@ import {
   Clock,
   Download,
   Lock,
+  Bookmark,
+  Timer,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useLessons } from "@/hooks/useLessons";
+import { useBookmarks } from "@/hooks/useBookmarks";
 import VideoPlayer from "@/components/VideoPlayer";
+import { PracticeCoach } from "@/components/PracticeCoach";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 
 const Lesson = () => {
@@ -21,7 +26,9 @@ const Lesson = () => {
   const { user, loading: authLoading } = useAuth();
   const { isPro, loading: profileLoading } = useProfile();
   const { lessons, progress, markComplete, loading: lessonsLoading } = useLessons();
+  const { isBookmarked, toggleBookmark } = useBookmarks();
   const [isMarking, setIsMarking] = useState(false);
+  const [showPractice, setShowPractice] = useState(false);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -126,6 +133,23 @@ const Lesson = () => {
           </Link>
 
           <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => toggleBookmark(lesson.id)}
+              className={isBookmarked(lesson.id) ? "text-primary" : "text-muted-foreground"}
+            >
+              <Bookmark className={`w-4 h-4 ${isBookmarked(lesson.id) ? "fill-current" : ""}`} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowPractice(true)}
+              className="text-muted-foreground hover:text-primary"
+            >
+              <Timer className="w-4 h-4" />
+            </Button>
             <span className="text-sm text-muted-foreground">
               Lesson {currentIndex + 1} of {lessons.length}
             </span>
@@ -244,6 +268,12 @@ const Lesson = () => {
           )}
         </div>
       </main>
+      <PracticeCoach
+        lessonId={lesson.id}
+        lessonTitle={lesson.title}
+        open={showPractice}
+        onOpenChange={setShowPractice}
+      />
     </div>
   );
 };
