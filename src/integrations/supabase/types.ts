@@ -43,6 +43,88 @@ export type Database = {
           },
         ]
       }
+      challenge_attempts: {
+        Row: {
+          challenge_id: string
+          completed_at: string
+          completion_time_seconds: number
+          id: string
+          points_earned: number
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          completed_at?: string
+          completion_time_seconds: number
+          id?: string
+          points_earned?: number
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          completed_at?: string
+          completion_time_seconds?: number
+          id?: string
+          points_earned?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_attempts_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenges: {
+        Row: {
+          created_at: string
+          description: string | null
+          difficulty: string
+          duration_seconds: number
+          id: string
+          is_active: boolean
+          lesson_id: string | null
+          points: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          difficulty: string
+          duration_seconds: number
+          id?: string
+          is_active?: boolean
+          lesson_id?: string | null
+          points?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          duration_seconds?: number
+          id?: string
+          is_active?: boolean
+          lesson_id?: string | null
+          points?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenges_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_progress: {
         Row: {
           completed: boolean
@@ -87,36 +169,81 @@ export type Database = {
       lessons: {
         Row: {
           created_at: string
+          created_by: string | null
           description: string | null
           duration: string | null
           id: string
           is_free: boolean
           order_index: number
+          prerequisites: string[] | null
+          preview_duration: number | null
           skill_level: string
+          status: string | null
+          tags: string[] | null
+          thumbnail_url: string | null
           title: string
+          video_quality: string | null
           video_url: string | null
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           description?: string | null
           duration?: string | null
           id?: string
           is_free?: boolean
           order_index: number
+          prerequisites?: string[] | null
+          preview_duration?: number | null
           skill_level?: string
+          status?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
           title: string
+          video_quality?: string | null
           video_url?: string | null
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           description?: string | null
           duration?: string | null
           id?: string
           is_free?: boolean
           order_index?: number
+          prerequisites?: string[] | null
+          preview_duration?: number | null
           skill_level?: string
+          status?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
           title?: string
+          video_quality?: string | null
           video_url?: string | null
+        }
+        Relationships: []
+      }
+      platform_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
         }
         Relationships: []
       }
@@ -161,7 +288,10 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          is_suspended: boolean | null
+          onboarding_completed: boolean | null
           subscription_tier: string
+          total_points: number | null
           updated_at: string
           user_id: string
         }
@@ -170,7 +300,10 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          is_suspended?: boolean | null
+          onboarding_completed?: boolean | null
           subscription_tier?: string
+          total_points?: number | null
           updated_at?: string
           user_id: string
         }
@@ -179,8 +312,112 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          is_suspended?: boolean | null
+          onboarding_completed?: boolean | null
           subscription_tier?: string
+          total_points?: number | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      resources: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          difficulty: string | null
+          download_count: number
+          id: string
+          lesson_id: string | null
+          title: string
+          type: string
+          updated_at: string
+          url: string
+          view_count: number
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          difficulty?: string | null
+          download_count?: number
+          id?: string
+          lesson_id?: string | null
+          title: string
+          type: string
+          updated_at?: string
+          url: string
+          view_count?: number
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          difficulty?: string | null
+          download_count?: number
+          id?: string
+          lesson_id?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          url?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resources_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          badge_name: string
+          badge_type: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_name: string
+          badge_type: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_name?: string
+          badge_type?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
         Relationships: []
@@ -190,10 +427,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "super_admin" | "content_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -320,6 +564,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["super_admin", "content_admin"],
+    },
   },
 } as const
