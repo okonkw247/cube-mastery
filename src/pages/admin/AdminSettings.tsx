@@ -1,0 +1,86 @@
+import { AdminLayout } from '@/components/admin/AdminLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
+
+export default function AdminSettings() {
+  const handleSave = () => toast.success('Settings saved');
+
+  return (
+    <AdminLayout requiredPermission="manage_settings">
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">Settings</h1>
+          <p className="text-muted-foreground">Configure platform settings</p>
+        </div>
+
+        <Tabs defaultValue="general" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="branding">Branding</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="general">
+            <Card>
+              <CardHeader>
+                <CardTitle>General Settings</CardTitle>
+                <CardDescription>Basic platform configuration</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div><Label>Platform Name</Label><Input defaultValue="Cube Mastery" /></div>
+                <div className="flex items-center justify-between">
+                  <div><Label>Enable Registration</Label><p className="text-sm text-muted-foreground">Allow new users to sign up</p></div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div><Label>Maintenance Mode</Label><p className="text-sm text-muted-foreground">Temporarily disable the platform</p></div>
+                  <Switch />
+                </div>
+                <Button onClick={handleSave}>Save Changes</Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="branding">
+            <Card>
+              <CardHeader>
+                <CardTitle>Branding</CardTitle>
+                <CardDescription>Customize platform appearance</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div><Label>Logo URL</Label><Input placeholder="https://..." /></div>
+                <div><Label>Primary Color</Label><Input type="color" defaultValue="#3b82f6" className="w-20 h-10" /></div>
+                <Button onClick={handleSave}>Save Changes</Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="notifications">
+            <Card>
+              <CardHeader>
+                <CardTitle>Notifications</CardTitle>
+                <CardDescription>Email and notification settings</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div><Label>Welcome Email</Label><p className="text-sm text-muted-foreground">Send welcome email to new users</p></div>
+                  <Switch defaultChecked />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div><Label>Streak Reminders</Label><p className="text-sm text-muted-foreground">Remind users about their streak</p></div>
+                  <Switch defaultChecked />
+                </div>
+                <Button onClick={handleSave}>Save Changes</Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </AdminLayout>
+  );
+}
