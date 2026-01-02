@@ -8,16 +8,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function AdminDashboard() {
-  const { stats, topPerformers, loading } = useAdminData();
+  const { stats, topPerformers, weeklyActivity, loading } = useAdminData();
   const { celebration, celebrate, closeCelebration } = useCelebration();
   const [celebratedMilestones, setCelebratedMilestones] = useState<Set<string>>(new Set());
-
-  const chartData = [
-    { name: 'Mon', students: 12 }, { name: 'Tue', students: 19 },
-    { name: 'Wed', students: 15 }, { name: 'Thu', students: 22 },
-    { name: 'Fri', students: 30 }, { name: 'Sat', students: 25 },
-    { name: 'Sun', students: 18 },
-  ];
 
   // Check for milestone achievements and trigger celebrations
   useEffect(() => {
@@ -73,7 +66,12 @@ export default function AdminDashboard() {
             <h2 className="font-semibold mb-4">Weekly Activity</h2>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
+                <AreaChart data={weeklyActivity.length > 0 ? weeklyActivity : [
+                  { name: 'Mon', students: 0 }, { name: 'Tue', students: 0 },
+                  { name: 'Wed', students: 0 }, { name: 'Thu', students: 0 },
+                  { name: 'Fri', students: 0 }, { name: 'Sat', students: 0 },
+                  { name: 'Sun', students: 0 },
+                ]}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />

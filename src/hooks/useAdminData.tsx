@@ -11,6 +11,13 @@ export interface AdminStats {
   pendingApprovals: number;
 }
 
+export interface WeeklyActivityData {
+  name: string;
+  students: number;
+  lessons: number;
+  date: string;
+}
+
 export interface TopPerformer {
   id: string;
   name: string;
@@ -72,6 +79,7 @@ export function useAdminData() {
   const [users, setUsers] = useState<UserWithProgress[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [weeklyActivity, setWeeklyActivity] = useState<WeeklyActivityData[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchStats = useCallback(async () => {
@@ -123,6 +131,45 @@ export function useAdminData() {
       avgPracticeTime,
       pendingApprovals: pendingApprovals || 0,
     });
+  }, [isAdmin]);
+
+  const fetchWeeklyActivity = useCallback(async () => {
+    if (!isAdmin) return;
+
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekData: WeeklyActivityData[] = [];
+
+    // Get last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      const dayName = days[date.getDay()];
+
+      // Count active students for this day
+      const { count: studentCount } = await supabase
+        .from('lesson_progress')
+        .select('user_id', { count: 'exact', head: true })
+        .gte('updated_at', dateStr)
+        .lt('updated_at', new Date(date.getTime() + 86400000).toISOString().split('T')[0]);
+
+      // Count lessons completed this day
+      const { count: lessonCount } = await supabase
+        .from('lesson_progress')
+        .select('*', { count: 'exact', head: true })
+        .eq('completed', true)
+        .gte('completed_at', dateStr)
+        .lt('completed_at', new Date(date.getTime() + 86400000).toISOString().split('T')[0]);
+
+      weekData.push({
+        name: dayName,
+        students: studentCount || 0,
+        lessons: lessonCount || 0,
+        date: dateStr,
+      });
+    }
+
+    setWeeklyActivity(weekData);
   }, [isAdmin]);
 
   const fetchTopPerformers = useCallback(async () => {
@@ -214,9 +261,10 @@ export function useAdminData() {
       fetchUsers(),
       fetchResources(),
       fetchChallenges(),
+      fetchWeeklyActivity(),
     ]);
     setLoading(false);
-  }, [fetchStats, fetchTopPerformers, fetchUsers, fetchResources, fetchChallenges]);
+  }, [fetchStats, fetchTopPerformers, fetchUsers, fetchResources, fetchChallenges, fetchWeeklyActivity]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -255,11 +303,13 @@ export function useAdminData() {
     users,
     resources,
     challenges,
+    weeklyActivity,
     loading,
     refreshAll,
     fetchStats,
     fetchUsers,
     fetchResources,
     fetchChallenges,
+    fetchWeeklyActivity,
   };
 }
