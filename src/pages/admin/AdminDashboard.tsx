@@ -1,12 +1,16 @@
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { StatCard } from '@/components/admin/StatCard';
 import { useAdminData } from '@/hooks/useAdminData';
-import { Users, BookOpen, Timer, TrendingUp, Clock, AlertCircle } from 'lucide-react';
+import { CelebrationPopup, useCelebration } from '@/components/admin/CelebrationPopup';
+import { Users, BookOpen, Timer, TrendingUp, AlertCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function AdminDashboard() {
   const { stats, topPerformers, loading } = useAdminData();
+  const { celebration, celebrate, closeCelebration } = useCelebration();
+  const [celebratedMilestones, setCelebratedMilestones] = useState<Set<string>>(new Set());
 
   const chartData = [
     { name: 'Mon', students: 12 }, { name: 'Tue', students: 19 },
@@ -14,6 +18,36 @@ export default function AdminDashboard() {
     { name: 'Fri', students: 30 }, { name: 'Sat', students: 25 },
     { name: 'Sun', students: 18 },
   ];
+
+  // Check for milestone achievements and trigger celebrations
+  useEffect(() => {
+    if (loading || topPerformers.length === 0) return;
+
+    // Celebrate top performer reaching new point milestones
+    const topPerformer = topPerformers[0];
+    if (topPerformer) {
+      const milestones = [100, 250, 500, 1000, 2500, 5000];
+      for (const milestone of milestones) {
+        const key = `${topPerformer.id}-points-${milestone}`;
+        if (topPerformer.points >= milestone && !celebratedMilestones.has(key)) {
+          celebrate('points', `${milestone} Points Achieved!`, topPerformer.name);
+          setCelebratedMilestones(prev => new Set([...prev, key]));
+          break;
+        }
+      }
+    }
+
+    // Celebrate student count milestones
+    const studentMilestones = [10, 50, 100, 500, 1000];
+    for (const milestone of studentMilestones) {
+      const key = `students-${milestone}`;
+      if (stats.totalStudents >= milestone && !celebratedMilestones.has(key)) {
+        celebrate('lesson', `${milestone} Students Enrolled!`);
+        setCelebratedMilestones(prev => new Set([...prev, key]));
+        break;
+      }
+    }
+  }, [loading, topPerformers, stats.totalStudents, celebratedMilestones, celebrate]);
 
   return (
     <AdminLayout>
@@ -75,6 +109,14 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      <CelebrationPopup
+        open={celebration.open}
+        onClose={closeCelebration}
+        type={celebration.type}
+        milestone={celebration.milestone}
+        userName={celebration.userName}
+      />
     </AdminLayout>
   );
 }
