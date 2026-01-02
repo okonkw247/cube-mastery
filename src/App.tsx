@@ -20,6 +20,7 @@ import AdminResources from "./pages/admin/AdminResources";
 import AdminChallenges from "./pages/admin/AdminChallenges";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminInviteAccept from "./pages/admin/AdminInviteAccept";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ const App = () => (
                 <Route path="/admin/challenges" element={<AdminChallenges />} />
                 <Route path="/admin/analytics" element={<AdminAnalytics />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
+                <Route path="/admin/invite/:token" element={<AdminInviteAccept />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
