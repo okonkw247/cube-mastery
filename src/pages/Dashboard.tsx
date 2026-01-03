@@ -349,12 +349,13 @@ const Dashboard = () => {
                             <Bookmark className={`w-3 h-3 sm:w-4 sm:h-4 ${bookmarked ? "fill-current" : ""}`} />
                           </Button>
                           <Button
-                            variant="ghost"
-                            size="icon"
+                            variant="outline"
+                            size="sm"
                             onClick={() => setPracticeLesson({ id: lesson.id, title: lesson.title })}
-                            className="h-7 w-7 sm:h-9 sm:w-9 text-muted-foreground hover:text-primary"
+                            className="h-7 sm:h-9 px-2 sm:px-3 text-primary border-primary/30 hover:bg-primary/10 hover:border-primary gap-1 sm:gap-2"
                           >
                             <Timer className="w-3 h-3 sm:w-4 sm:h-4" />
+                            <span className="hidden sm:inline text-xs font-medium">Practice</span>
                           </Button>
                         </>
                       )}
