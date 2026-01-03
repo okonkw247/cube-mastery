@@ -13,9 +13,11 @@ const VideoAdOverlay = ({ isPreviewModalOpen }: VideoAdOverlayProps) => {
   const [visible, setVisible] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(false);
   const [fadeState, setFadeState] = useState<"in" | "out" | "visible">("in");
+  const [countdown, setCountdown] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownRef = useRef<NodeJS.Timeout | null>(null);
 
   const hasOptedOut = () => localStorage.getItem(AD_OPT_OUT_KEY) === "true";
   const hasSeenFirstAd = () => localStorage.getItem(AD_SHOWN_KEY) === "true";
@@ -26,11 +28,26 @@ const VideoAdOverlay = ({ isPreviewModalOpen }: VideoAdOverlayProps) => {
   };
 
   const closeAd = () => {
+    if (countdownRef.current) clearInterval(countdownRef.current);
     setFadeState("out");
     setTimeout(() => {
       setVisible(false);
       setIsFirstLoad(false);
+      setCountdown(0);
     }, 500);
+  };
+
+  const startCountdown = (seconds: number) => {
+    setCountdown(seconds);
+    countdownRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          if (countdownRef.current) clearInterval(countdownRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
 
   const showPeriodicAd = () => {
@@ -39,6 +56,7 @@ const VideoAdOverlay = ({ isPreviewModalOpen }: VideoAdOverlayProps) => {
     setIsFirstLoad(false);
     setFadeState("in");
     setVisible(true);
+    startCountdown(5);
     
     setTimeout(() => setFadeState("visible"), 50);
     
@@ -66,6 +84,7 @@ const VideoAdOverlay = ({ isPreviewModalOpen }: VideoAdOverlayProps) => {
       setFadeState("in");
       setVisible(true);
       localStorage.setItem(AD_SHOWN_KEY, "true");
+      startCountdown(7);
       
       setTimeout(() => setFadeState("visible"), 50);
       
@@ -81,6 +100,7 @@ const VideoAdOverlay = ({ isPreviewModalOpen }: VideoAdOverlayProps) => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (intervalRef.current) clearTimeout(intervalRef.current);
+      if (countdownRef.current) clearInterval(countdownRef.current);
     };
   }, []);
 
@@ -117,14 +137,24 @@ const VideoAdOverlay = ({ isPreviewModalOpen }: VideoAdOverlayProps) => {
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent pointer-events-none" />
           
-          {/* Close button */}
-          <button
-            onClick={closeAd}
-            className="absolute top-4 right-4 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground hover:bg-background transition-all duration-200 hover:scale-110"
-            aria-label="Close ad"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {/* Top right controls */}
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            {/* Countdown timer */}
+            {countdown > 0 && (
+              <div className="px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-sm font-medium text-foreground">
+                Skip in {countdown}s
+              </div>
+            )}
+            
+            {/* Close button */}
+            <button
+              onClick={closeAd}
+              className="p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground hover:bg-background transition-all duration-200 hover:scale-110"
+              aria-label="Close ad"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
           
           {/* Bottom content */}
           <div className="absolute bottom-0 left-0 right-0 p-6 flex items-end justify-between">
