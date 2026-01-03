@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import cubeVideo from "@/assets/cube-platform-preview.mp4";
 
 interface VideoAdOverlayProps {
@@ -13,11 +15,11 @@ const VideoAdOverlay = ({ isPreviewModalOpen }: VideoAdOverlayProps) => {
   const [visible, setVisible] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(false);
   const [fadeState, setFadeState] = useState<"in" | "out" | "visible">("in");
-  const [countdown, setCountdown] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [canSkip, setCanSkip] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const countdownRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const hasOptedOut = () => localStorage.getItem(AD_OPT_OUT_KEY) === "true";
   const hasSeenFirstAd = () => localStorage.getItem(AD_SHOWN_KEY) === "true";
@@ -28,26 +30,39 @@ const VideoAdOverlay = ({ isPreviewModalOpen }: VideoAdOverlayProps) => {
   };
 
   const closeAd = () => {
-    if (countdownRef.current) clearInterval(countdownRef.current);
+    if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     setFadeState("out");
     setTimeout(() => {
       setVisible(false);
       setIsFirstLoad(false);
-      setCountdown(0);
+      setProgress(0);
+      setCanSkip(false);
     }, 500);
   };
 
-  const startCountdown = (seconds: number) => {
-    setCountdown(seconds);
-    countdownRef.current = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          if (countdownRef.current) clearInterval(countdownRef.current);
-          return 0;
+  const startProgressTracking = () => {
+    // Enable skip button after 2 seconds
+    setTimeout(() => setCanSkip(true), 2000);
+    
+    progressIntervalRef.current = setInterval(() => {
+      if (videoRef.current) {
+        const currentTime = videoRef.current.currentTime;
+        const duration = videoRef.current.duration;
+        if (duration > 0) {
+          const progressPercent = (currentTime / duration) * 100;
+          setProgress(progressPercent);
+          
+          // Close when video ends
+          if (currentTime >= duration - 0.1) {
+            closeAd();
+          }
         }
-        return prev - 1;
-      });
-    }, 1000);
+      }
+    }, 100);
+  };
+
+  const handleVideoEnded = () => {
+    closeAd();
   };
 
   const showPeriodicAd = () => {
@@ -56,14 +71,18 @@ const VideoAdOverlay = ({ isPreviewModalOpen }: VideoAdOverlayProps) => {
     setIsFirstLoad(false);
     setFadeState("in");
     setVisible(true);
-    startCountdown(5);
+    setProgress(0);
+    setCanSkip(false);
     
     setTimeout(() => setFadeState("visible"), 50);
     
-    // Auto-close after 5 seconds
-    timerRef.current = setTimeout(() => {
-      closeAd();
-    }, 5000);
+    // Reset video to start
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play();
+    }
+    
+    startProgressTracking();
   };
 
   const scheduleNextAd = () => {
@@ -84,23 +103,19 @@ const VideoAdOverlay = ({ isPreviewModalOpen }: VideoAdOverlayProps) => {
       setFadeState("in");
       setVisible(true);
       localStorage.setItem(AD_SHOWN_KEY, "true");
-      startCountdown(7);
       
       setTimeout(() => setFadeState("visible"), 50);
       
-      // Auto-close after 7 seconds for first load
-      timerRef.current = setTimeout(() => {
-        closeAd();
-      }, 7000);
+      // Start progress tracking after video loads
+      setTimeout(() => startProgressTracking(), 100);
     }
 
     // Schedule periodic ads
     scheduleNextAd();
 
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
       if (intervalRef.current) clearTimeout(intervalRef.current);
-      if (countdownRef.current) clearInterval(countdownRef.current);
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     };
   }, []);
 
@@ -129,48 +144,75 @@ const VideoAdOverlay = ({ isPreviewModalOpen }: VideoAdOverlayProps) => {
             src={cubeVideo}
             autoPlay
             muted
-            loop
             playsInline
+            onEnded={handleVideoEnded}
             className="w-full h-full object-cover"
           />
           
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent pointer-events-none" />
           
           {/* Top right controls */}
           <div className="absolute top-4 right-4 flex items-center gap-2">
-            {/* Countdown timer */}
-            {countdown > 0 && (
-              <div className="px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-sm font-medium text-foreground">
-                Skip in {countdown}s
-              </div>
-            )}
-            
-            {/* Close button */}
+            {/* Skip button */}
             <button
               onClick={closeAd}
-              className="p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground hover:bg-background transition-all duration-200 hover:scale-110"
-              aria-label="Close ad"
+              disabled={!canSkip}
+              className={`px-3 py-1.5 rounded-full backdrop-blur-sm border text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                canSkip 
+                  ? "bg-background/80 border-border/50 text-foreground hover:bg-background hover:scale-105 cursor-pointer" 
+                  : "bg-background/40 border-border/30 text-muted-foreground cursor-not-allowed"
+              }`}
+              aria-label="Skip ad"
             >
-              <X className="w-5 h-5" />
+              {canSkip ? (
+                <>
+                  <X className="w-4 h-4" />
+                  Skip
+                </>
+              ) : (
+                "Skip in 2s"
+              )}
             </button>
           </div>
           
           {/* Bottom content */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 flex items-end justify-between">
-            <div>
-              <h3 className="text-xl font-bold text-foreground mb-1">Master the Cube</h3>
-              <p className="text-sm text-muted-foreground">Start your speedcubing journey today</p>
+          <div className="absolute bottom-0 left-0 right-0">
+            {/* Progress bar */}
+            <div className="w-full h-1 bg-muted/30">
+              <div 
+                className="h-full bg-primary transition-all duration-100 ease-linear shadow-[0_0_8px_hsl(var(--primary)/0.6)]"
+                style={{ width: `${progress}%` }}
+              />
             </div>
             
-            {isFirstLoad && (
-              <button
-                onClick={handleOptOut}
-                className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
-              >
-                Do not show again
-              </button>
-            )}
+            <div className="p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1">Master the Cube</h3>
+                <p className="text-sm text-muted-foreground">Start your speedcubing journey today</p>
+              </div>
+              
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <Link to="/auth" className="flex-1 sm:flex-initial">
+                  <Button 
+                    size="sm" 
+                    className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6"
+                    onClick={closeAd}
+                  >
+                    Watch Full Course
+                  </Button>
+                </Link>
+                
+                {isFirstLoad && (
+                  <button
+                    onClick={handleOptOut}
+                    className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors whitespace-nowrap"
+                  >
+                    Don't show again
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
