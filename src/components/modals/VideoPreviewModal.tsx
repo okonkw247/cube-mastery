@@ -1,6 +1,6 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X } from "lucide-react";
+import { X, Volume2, VolumeX } from "lucide-react";
 import cubeVideo from "@/assets/cube-platform-preview.mp4";
 
 interface VideoPreviewModalProps {
@@ -10,12 +10,24 @@ interface VideoPreviewModalProps {
 
 const VideoPreviewModal = ({ open, onOpenChange }: VideoPreviewModalProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
     if (open && videoRef.current) {
       videoRef.current.play().catch(() => {});
     }
+    // Reset mute state when modal closes
+    if (!open) {
+      setIsMuted(true);
+    }
   }, [open]);
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -24,14 +36,26 @@ const VideoPreviewModal = ({ open, onOpenChange }: VideoPreviewModalProps) => {
         <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/5 to-primary/20 rounded-2xl blur-xl -z-10" />
         
         <div className="relative">
-          {/* Close button */}
-          <button
-            onClick={() => onOpenChange(false)}
-            className="absolute top-4 right-4 z-20 p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground hover:bg-background transition-all duration-200 hover:scale-110"
-            aria-label="Close preview"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {/* Top controls */}
+          <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+            {/* Sound toggle */}
+            <button
+              onClick={toggleMute}
+              className="p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground hover:bg-background transition-all duration-200 hover:scale-110"
+              aria-label={isMuted ? "Unmute" : "Mute"}
+            >
+              {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+            </button>
+            
+            {/* Close button */}
+            <button
+              onClick={() => onOpenChange(false)}
+              className="p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 text-foreground hover:bg-background transition-all duration-200 hover:scale-110"
+              aria-label="Close preview"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
           
           {/* Video container */}
           <div className="aspect-video bg-black rounded-xl overflow-hidden">
@@ -39,7 +63,7 @@ const VideoPreviewModal = ({ open, onOpenChange }: VideoPreviewModalProps) => {
               ref={videoRef}
               src={cubeVideo}
               autoPlay
-              muted
+              muted={isMuted}
               loop
               playsInline
               className="w-full h-full object-cover"
