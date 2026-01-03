@@ -1,12 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroCube from "@/assets/hero-cube.jpg";
 import VideoPreviewModal from "@/components/modals/VideoPreviewModal";
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  onPreviewModalChange?: (isOpen: boolean) => void;
+}
+
+const HeroSection = ({ onPreviewModalChange }: HeroSectionProps) => {
   const [videoOpen, setVideoOpen] = useState(false);
+
+  useEffect(() => {
+    onPreviewModalChange?.(videoOpen);
+  }, [videoOpen, onPreviewModalChange]);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
