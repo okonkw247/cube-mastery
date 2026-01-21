@@ -1,73 +1,116 @@
-# Welcome to your Lovable project
+# Digital Product Platform
 
-## Project info
+A modern, high-performance web application built for digital product creators and entrepreneurs.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🚀 About This Project
 
-## How can I edit this code?
+This platform provides a seamless experience for selling and managing digital products with automatic revenue distribution, crypto payment support, and international payment processing.
 
-There are several ways of editing your application.
+## 🛠️ Tech Stack
 
-**Use Lovable**
+This project is built with cutting-edge technologies:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- **Vite** - Lightning-fast build tool and development server
+- **TypeScript** - Type-safe code for better reliability
+- **React** - Modern UI library for building interactive interfaces
+- **Tailwind CSS** - Utility-first CSS framework for rapid styling
+- **shadcn/ui** - Beautiful, accessible component library
 
-Changes made via Lovable will be committed automatically to this repo.
+## 📦 Getting Started
 
-**Use your preferred IDE**
+### Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Make sure you have Node.js and npm installed on your system.
+- [Install Node.js with nvm](https://github.com/nvm-sh/nvm#installing-and-updating) (recommended)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
+Follow these steps to run the project locally:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Clone the repository
+git clone <your-repository-url>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to project directory
+cd <project-name>
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🔧 Development
 
-**Use GitHub Codespaces**
+### Available Scripts
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build locally
+- `npm run lint` - Run ESLint to check code quality
 
-## What technologies are used for this project?
+### Project Structure
 
-This project is built with:
+```
+├── src/
+│   ├── components/     # Reusable UI components
+│   ├── pages/          # Page components
+│   ├── lib/            # Utility functions and helpers
+│   ├── hooks/          # Custom React hooks
+│   └── styles/         # Global styles and Tailwind config
+├── public/             # Static assets
+└── index.html          # Entry HTML file
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🌐 Deployment
 
-## How can I deploy this project?
+This project can be deployed to any modern hosting platform:
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+- **Vercel** (recommended for React apps)
+- **Netlify**
+- **GitHub Pages**
+- **Your own VPS/server**
 
-## Can I connect a custom domain to my Lovable project?
+### Deploy to Vercel
 
-Yes, you can!
+```sh
+npm install -g vercel
+vercel
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Build for Production
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```sh
+npm run build
+```
+
+The production-ready files will be in the `dist/` directory.
+
+## 🔐 Environment Variables
+
+Create a `.env` file in the root directory:
+
+```
+VITE_API_URL=your_api_url
+VITE_STRIPE_KEY=your_stripe_key
+# Add other environment variables as needed
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to submit issues and pull requests.
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 📧 Contact
+
+For questions or support, please reach out via [your contact method].
+
+---
+
+Built with ❤️ for digital creators and entrepreneurs
