@@ -19,6 +19,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y imagemagick
 
+      - name: ImageMagick diagnostic
+        run: |
+          echo "Which magick?"
+          which magick || echo "magick not found"
+          echo "Which convert?"
+          which convert || echo "convert not found"
+          echo "magick --version (if present):"
+          if command -v magick >/dev/null 2>&1; then magick --version; fi
+          echo "convert --version (if present):"
+          if command -v convert >/dev/null 2>&1; then convert --version; fi
+
       - name: Download source image
         run: |
           mkdir -p public tmp_favicon
@@ -36,19 +47,45 @@ jobs:
             echo "No existing favicon.ico found; nothing to back up."
           fi
 
-      - name: Create square PNG (512x512), center-crop, transparent background
+      - name: Create square PNG (512x512), center-crop, transparent background (use magick or convert)
         run: |
-          magick public/favicon-source.jpg -resize 512x512^ -gravity center -background none -extent 512x512 tmp_favicon/square.png
+          if command -v magick >/dev/null 2>&1; then
+            CMD=magick
+          elif command -v convert >/dev/null 2>&1; then
+            CMD=convert
+          else
+            echo "ERROR: neither 'magick' nor 'convert' found" >&2
+            exit 127
+          fi
+          echo "Using image command: $CMD"
+          if [ "$CMD" = "magick" ]; then
+            magick public/favicon-source.jpg -resize 512x512^ -gravity center -background none -extent 512x512 tmp_favicon/square.png
+          else
+            convert public/favicon-source.jpg -resize 512x512^ -gravity center -background none -extent 512x512 tmp_favicon/square.png
+          fi
 
       - name: Generate resized PNGs
         run: |
+          if command -v magick >/dev/null 2>&1; then
+            CMD=magick
+          else
+            CMD=convert
+          fi
           for s in 16 32 48 64 128; do
-            magick tmp_favicon/square.png -resize ${s}x${s} -sharpen 0x0.8 tmp_favicon/favicon-${s}.png
+            if [ "$CMD" = "magick" ]; then
+              magick tmp_favicon/square.png -resize ${s}x${s} -sharpen 0x0.8 tmp_favicon/favicon-${s}.png
+            else
+              convert tmp_favicon/square.png -resize ${s}x${s} -sharpen 0x0.8 tmp_favicon/favicon-${s}.png
+            fi
           done
 
       - name: Build multi-size favicon.ico
         run: |
-          magick tmp_favicon/favicon-16.png tmp_favicon/favicon-32.png tmp_favicon/favicon-48.png tmp_favicon/favicon-64.png tmp_favicon/favicon-128.png public/favicon.ico
+          if command -v magick >/dev/null 2>&1; then
+            magick tmp_favicon/favicon-16.png tmp_favicon/favicon-32.png tmp_favicon/favicon-48.png tmp_favicon/favicon-64.png tmp_favicon/favicon-128.png public/favicon.ico
+          else
+            convert tmp_favicon/favicon-16.png tmp_favicon/favicon-32.png tmp_favicon/favicon-48.png tmp_favicon/favicon-64.png tmp_favicon/favicon-128.png public/favicon.ico
+          fi
 
       - name: Commit & push favicon to main
         env:
